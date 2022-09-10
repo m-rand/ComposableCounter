@@ -4,22 +4,30 @@ import Foundation
 import XCTestDynamicOverlay
 
 struct FactClient {
-    var fetchAsync: @Sendable (Int) async throws -> String
-    var fetchCombine: (Int) -> Effect<String, Error>
+#if compiler(>=5.5)
+    var fetch: @Sendable (Int) async throws -> String
+#else
+    var fetch: (Int) -> Effect<String, Failure>
+    struct Failure: Error, Equatable {} // for Combine
+#endif
 }
 
 // This is the "live" fact dependency that reaches into the outside world to fetch trivia.
 // Typically this live implementation of the dependency would live in its own module so that the
 // main feature doesn't need to compile it.
 extension FactClient {
+#if compiler(>=5.5)
     static let live = Self(
-        fetchAsync: { number in
+        fetch: { number in
             try await Task.sleep(nanoseconds: NSEC_PER_SEC)
             let (data, _) = try await
             URLSession.shared.data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
             return String(decoding: data, as: UTF8.self)
-        },
-        fetchCombine: { number in
+        }
+    )
+#else
+    static let live = Self(
+        fetch: { number in
             URLSession.shared.dataTaskPublisher(
                 for: URL(string: "http://numbersapi.com/\(number)/trivia")!
             )
@@ -34,6 +42,7 @@ extension FactClient {
             .eraseToEffect()
         }
     )
+#endif
 }
 
 #if DEBUG
@@ -41,8 +50,7 @@ extension FactClient {
     // This is the "unimplemented" fact dependency that is useful to plug into tests that you want
     // to prove do not need the dependency.
     static let unimplemented = Self(
-        fetchAsync: XCTUnimplemented("\(Self.self).fetchAsync"),
-        fetchCombine: XCTUnimplemented("\(Self.self).fetchCombine")
+        fetch: XCTUnimplemented("\(Self.self).fetch")
     )
 }
 #endif

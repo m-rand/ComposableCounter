@@ -15,6 +15,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(frame: UIScreen.main.bounds)
+#if compiler(>=5.5)
+        let env = CounterListEnvironment(numberFact: .live)
+#else
+        let env = CounterListEnvironment(numberFact: .live, mainQueue: .main)
+#endif
         let viewController = CounterListController(store: .init(
             initialState: CounterListState(
                 counters: [
@@ -24,7 +29,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 ]
             ),
             reducer: counterListReducer.debug().signpost(),
-            environment: CounterListEnvironment(numberFact: .live)
+            environment: env
         ))
 
         let navigationController = UINavigationController(rootViewController: viewController)
