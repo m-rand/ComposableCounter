@@ -9,7 +9,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct CounterDetailView: View {
-    let store: Store<CounterDetailState, CounterDetailAction>
+    let store: Store<CounterDetail.State, CounterDetail.Action>
 
     var body: some View {
         WithViewStore(self.store) { viewStore in
@@ -27,7 +27,7 @@ struct CounterDetailView: View {
             }
             .padding()
             .onAppear {
-                viewStore.send(.onAppear(viewStore.number))
+                viewStore.send(.onAppear)
             }
         }
     }
@@ -37,11 +37,8 @@ struct CounterDetailView_Previews: PreviewProvider {
     static var previews: some View {
         CounterDetailView(
             store: Store(
-                initialState: CounterDetailState(number: 4),
-                reducer: counterDetailReducer,
-                environment: CounterDetailEnvironment(
-                    fact: .live
-                )
+                initialState: CounterDetail.State(number: 4),
+                reducer: CounterDetail()
             )
         )
     }

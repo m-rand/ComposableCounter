@@ -8,36 +8,31 @@
 import ComposableArchitecture
 import Foundation
 
-struct CounterListState: Equatable {
-    var counters: IdentifiedArrayOf<CounterState> = []
-}
+struct CounterList: ReducerProtocol {
+    struct State: Equatable {
+        var counters: IdentifiedArrayOf<Counter.State> = []
+    }
 
-enum CounterListAction: Equatable {
-    case counter(id: CounterState.ID, action: CounterAction)
-    case add
-    case delete(id: CounterState.ID)
-}
+    enum Action {
+        case counter(id: Counter.State.ID, action: Counter.Action)
+        case add
+        case delete(id: Counter.State.ID)
+    }
 
-struct CounterListEnvironment {
-    var numberFact: FactClient
-}
-
-let counterListReducer: Reducer<CounterListState, CounterListAction, CounterListEnvironment> = .combine(
-    Reducer { state, action, env in
-        switch action {
-        case let .delete(id):
-            state.counters.remove(id: id)
-            return .none
-        case .add:
-            state.counters.append(CounterState())
-            return .none
-        default:
-            return .none
+    var body: some ReducerProtocol<State, Action> {
+        Reduce { state, action in
+            switch action {
+            case let .delete(id):
+                state.counters.remove(id: id)
+                return .none
+            case .add:
+                state.counters.append(Counter.State())
+                return .none
+            default:
+                return .none
+            }
+        }.forEach(\.counters, action: /Action.counter(id:action:)) {
+            Counter()
         }
-    },
-    counterReducer.forEach(
-        state: \.counters,
-        action: /CounterListAction.counter(id:action:),
-        environment: { _ in CounterEnvironment() }
-    )
-)
+    }
+}

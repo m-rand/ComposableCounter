@@ -8,7 +8,7 @@
 import ComposableArchitecture
 import UIKit
 
-final class CounterCell: StoreCell<CounterState, CounterAction> {
+final class CounterCell: StoreCell<Counter.State, Counter.Action> {
 
 //    var counter: CounterState? // not needed here!
 
@@ -46,7 +46,7 @@ final class CounterCell: StoreCell<CounterState, CounterAction> {
         ])
     }
 
-    override func configureStateObservation(on viewStore: ViewStore<CounterState, CounterAction>) {
+    override func configureStateObservation(on viewStore: ViewStore<Counter.State, Counter.Action>) {
         viewStore
             .publisher
             .map { "\($0.count)" }

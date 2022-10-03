@@ -8,7 +8,7 @@
 import ComposableArchitecture
 import UIKit
 
-final class CounterDetailController: StoreViewController<CounterDetailState, CounterDetailAction> {
+final class CounterDetailController: StoreViewController<CounterDetail.State, CounterDetail.Action> {
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -17,7 +17,7 @@ final class CounterDetailController: StoreViewController<CounterDetailState, Cou
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.viewStore.send(.onAppear(self.viewStore.number))
+        self.viewStore.send(.onAppear)
     }
 
     private lazy var countLabel: UILabel = {
@@ -49,7 +49,7 @@ final class CounterDetailController: StoreViewController<CounterDetailState, Cou
         ])
     }
 
-    override func configureStateObservation(on viewStore: ViewStore<CounterDetailState, CounterDetailAction>) {
+    override func configureStateObservation(on viewStore: ViewStore<CounterDetail.State, CounterDetail.Action>) {
         viewStore.publisher.number
             .map(String.init)
             .assign(to: \.text, on: countLabel)

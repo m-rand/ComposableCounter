@@ -5,6 +5,7 @@
 //  Created by Marcel Balas on 07.09.2022.
 //
 
+import ComposableArchitecture
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -15,22 +16,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(frame: UIScreen.main.bounds)
-#if compiler(>=5.5)
-        let env = CounterListEnvironment(numberFact: .live)
-#else
-        let env = CounterListEnvironment(numberFact: .live, mainQueue: .main)
-#endif
-        let viewController = CounterListController(store: .init(
-            initialState: CounterListState(
-                counters: [
-                    CounterState(),
-                    CounterState(),
-                    CounterState(),
-                ]
-            ),
-            reducer: counterListReducer.debug().signpost(),
-            environment: env
+        let viewController = CounterListController(store: Store(
+            initialState: CounterList.State(),
+            reducer: CounterList()
         ))
+
+//        CounterListController(store: .init(
+//            initialState: CounterListState(
+//                counters: [
+//                    CounterState(),
+//                    CounterState(),
+//                    CounterState(),
+//                ]
+//            ),
+//            reducer: counterListReducer.debug().signpost(),
+//            environment: env
+//        ))
 
         let navigationController = UINavigationController(rootViewController: viewController)
         navigationController.navigationBar.prefersLargeTitles = true

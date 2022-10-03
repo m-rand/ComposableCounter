@@ -11,7 +11,7 @@ import Foundation
 import UIKit
 import SwiftUI
 
-final class CounterListController: StoreCollectionViewController<CounterListState, CounterListAction> {
+final class CounterListController: StoreCollectionViewController<CounterList.State, CounterList.Action> {
 
     private enum Section: Int, CaseIterable {
         case counters
@@ -58,7 +58,7 @@ final class CounterListController: StoreCollectionViewController<CounterListStat
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addTapped))
     }
 
-    override func configureStateObservation(on viewStore: ViewStore<CounterListState, CounterListAction>) {
+    override func configureStateObservation(on viewStore: ViewStore<CounterList.State, CounterList.Action>) {
         viewStore.publisher.counters
             .removeDuplicates(by: { prev, next in
                 // Dont create snapshots if the changes are only _inside_ cells.
@@ -90,7 +90,7 @@ final class CounterListController: StoreCollectionViewController<CounterListStat
     }
 
     private func createSnapshot()
-    -> (IdentifiedArrayOf<CounterState>)
+    -> (IdentifiedArrayOf<Counter.State>)
     -> NSDiffableDataSourceSnapshot<Section, UUID> {
         { items in
             var snapshot = NSDiffableDataSourceSnapshot<Section, UUID>()
@@ -111,9 +111,8 @@ final class CounterListController: StoreCollectionViewController<CounterListStat
                     // We can create a new store and not scoping to an existing one, since we don't bind anything from
                     // the child view to a parent.
                     store: Store(
-                        initialState: CounterDetailState(number: counter.count),
-                        reducer: counterDetailReducer,
-                        environment: CounterDetailEnvironment(fact: .live)
+                        initialState: CounterDetail.State(number: counter.count),
+                        reducer: CounterDetail()
                     )
                 )
             )

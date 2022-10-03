@@ -8,50 +8,33 @@
 import ComposableArchitecture
 import Foundation
 
-struct CounterDetailState: Equatable {
-    var number: Int
-    var fact: String?
-}
+struct CounterDetail: ReducerProtocol {
+    struct State: Equatable {
+        var number: Int
+        var fact: String?
+    }
 
-enum CounterDetailAction: Equatable {
-    case onAppear(Int)
-#if compiler(>=5.5)
-    case numberFactResponse(TaskResult<String>)
-#else
-    case numberFactResponse(Result<String, FactClient.Failure>)
-#endif
-}
+    enum Action {
+        case onAppear
+        case numberFactResponse(TaskResult<String>)
+    }
 
-struct NumbersApiError: Error, Equatable {}
+    @Dependency(\.factClient) var factClient
 
-struct CounterDetailEnvironment {
-    var fact: FactClient
-#if compiler(<5.5)
-    var mainQueue: AnySchedulerOf<DispatchQueue>
-#endif
-}
-
-let counterDetailReducer = Reducer<
-    CounterDetailState, CounterDetailAction, CounterDetailEnvironment
-> { state, action, environment in
-    switch action {
-    case let .onAppear(number):
-        state.fact = nil
-        // Return an effect that fetches a number fact from the API and returns the
-        // value back to the reducer's `numberFactResponse` action.
-#if compiler(>=5.5)
-        return .task { [count = state.number] in
-            await .numberFactResponse(TaskResult { try await environment.fact.fetch(count) })
+    func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+        switch action {
+        case .onAppear:
+            state.fact = nil
+            // Return an effect that fetches a number fact from the API and returns the
+            // value back to the reducer's `numberFactResponse` action.
+            return .task { [count = state.number] in
+                await .numberFactResponse(TaskResult { try await self.factClient.fetch(count) })
+            }
+       case let .numberFactResponse(.success(result)):
+            state.fact = result
+            return .none
+        case .numberFactResponse(.failure):
+            return .none
         }
-#else
-        return environment.fact.fetchCombine(state.number)
-            .receive(on: environment.mainQueue)
-            .catchToEffect(CounterDetailAction.numberFactResponse)
-#endif
-    case let .numberFactResponse(.success(result)):
-        state.fact = result
-        return .none
-    case .numberFactResponse(.failure):
-        return .none
     }
 }

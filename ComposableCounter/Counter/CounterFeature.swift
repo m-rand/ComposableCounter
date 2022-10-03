@@ -8,25 +8,25 @@
 import ComposableArchitecture
 import Foundation
 
-struct CounterState: Equatable, Identifiable {
-    let id = UUID()
-    var count = 0
-}
+struct Counter: ReducerProtocol {
+    struct State: Equatable, Identifiable {
+        let id = UUID()
+        var count = 0
+    }
 
-enum CounterAction: Equatable {
-    case decrementButtonTapped
-    case incrementButtonTapped
-}
+    enum Action {
+        case decrementButtonTapped
+        case incrementButtonTapped
+    }
 
-struct CounterEnvironment {}
-
-let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
-    switch action {
-    case .decrementButtonTapped:
-        state.count -= 1
-        return .none
-    case .incrementButtonTapped:
-        state.count += 1
-        return .none
+    func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+        switch action {
+        case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+        case .incrementButtonTapped:
+            state.count += 1
+            return .none
+        }
     }
 }
